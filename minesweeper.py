@@ -150,8 +150,8 @@ class Sentence():
             self.check_cells()
 
     def check_cells(self):
-        lenCells = len(self.cells)
         cells = copy.deepcopy(self.cells)
+        lenCells = len(cells)
         if lenCells == 0:
             return
         elif self.count == 0:
@@ -189,8 +189,8 @@ class MinesweeperAI():
         to mark that cell as a mine as well.
         """
         self.mines.add(cell)
-        for sentence in self.knowledge:
-            sentence.mark_mine(cell)
+        #for sentence in self.knowledge:
+        #    sentence.mark_mine(cell)
 
     def mark_safe(self, cell):
         """
@@ -198,8 +198,8 @@ class MinesweeperAI():
         to mark that cell as safe as well.
         """
         self.safes.add(cell)
-        for sentence in self.knowledge:
-            sentence.mark_safe(cell)
+        #for sentence in self.knowledge:
+        #    sentence.mark_safe(cell)
 
     def add_knowledge(self, cell, count):
         """
@@ -225,6 +225,45 @@ class MinesweeperAI():
         for safe in sentence.known_safes():
             self.mark_safe(safe)
 
+        tmpSafe = copy.deepcopy(self.safes)
+        tmpMine = copy.deepcopy(self.mines)
+        x = 0
+        while x == 0:
+            x = 1
+            for s in copy.deepcopy(tmpSafe):
+                for sentence in self.knowledge:
+                    if sentence.cells:
+                        mineBefore = len(sentence.known_mines())
+                        safeBefore = len(sentence.known_safes())
+                        sentence.mark_safe(s)
+                        newSafes = sentence.known_safes()
+                        newMines = sentence.known_mines()
+                        if safeBefore != len(newSafes):
+                            x = 0
+                            tmpSafe = tmpSafe.union(newSafes)
+                            self.safes = self.safes.union(tmpSafe)
+                        if mineBefore != len(newMines):
+                            x = 0
+                            tmpMine = tmpMine.union(newMines)
+                            self.mines = self.mines.union(tmpMine)
+
+            for s in copy.deepcopy(tmpMine):
+                for sentence in self.knowledge:
+                    if sentence.cells:
+                        mineBefore = len(sentence.known_mines())
+                        safeBefore = len(sentence.known_safes())
+                        sentence.mark_mine(s)
+                        newSafes = sentence.known_safes()
+                        newMines = sentence.known_mines()
+                        if mineBefore != len(newMines):
+                            x = 0
+                            tmpMine = tmpMine.union(newMines)
+                            self.mines = self.mines.union(tmpMine)
+                        if safeBefore != len(newSafes):
+                            x = 0
+                            tmpSafe = tmpSafe.union(newSafes)
+                            self.safes = self.safes.union(tmpSafe)
+
     def nearby_mines(self, cell):
         """
         Returns the number of mines that are
@@ -233,7 +272,6 @@ class MinesweeperAI():
         """
 
         # Keep count of nearby mines
-        #count = 0
         cells = set()
 
         # Loop over all cells within one row and column
@@ -244,13 +282,10 @@ class MinesweeperAI():
                 if (i, j) == cell:
                     continue
 
-                # Update count if cell in bounds and is mine
                 if 0 <= i < self.height and 0 <= j < self.width:
                     cells.add((i,j))
-                    #if self.board[i][j]:
-                    #    count += 1
 
-        return cells#, count
+        return cells
 
     def make_safe_move(self):
         """
@@ -261,12 +296,10 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        print(">>>>>>>>>>>>",self.safes)
         for safe in self.safes:
             if safe not in self.moves_made:
                 return safe
 
-        #return self.make_random_move()
         return None
 
     def make_random_move(self):
@@ -276,10 +309,10 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        if len(self.moves_made) == self.height * self.width:
+        if len(self.moves_made) + len(self.mines) == self.height * self.width:
             return None
 
         cell = (random.randrange(self.height), random.randrange(self.width))
-        while cell in self.moves_made:
+        while cell in self.moves_made.union(self.mines) :
             cell = (random.randrange(self.height), random.randrange(self.width))
         return cell
