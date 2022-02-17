@@ -189,8 +189,9 @@ class MinesweeperAI():
         to mark that cell as a mine as well.
         """
         self.mines.add(cell)
-        #for sentence in self.knowledge:
-        #    sentence.mark_mine(cell)
+        for sentence in self.knowledge:
+            sentence.mark_mine(cell)
+            # this loop is not needed - but I shouldn't modify this function
 
     def mark_safe(self, cell):
         """
@@ -198,8 +199,9 @@ class MinesweeperAI():
         to mark that cell as safe as well.
         """
         self.safes.add(cell)
-        #for sentence in self.knowledge:
-        #    sentence.mark_safe(cell)
+        for sentence in self.knowledge:
+            sentence.mark_safe(cell)
+            # this loop is not needed - but I shouldn't modify this function
 
     def add_knowledge(self, cell, count):
         """
